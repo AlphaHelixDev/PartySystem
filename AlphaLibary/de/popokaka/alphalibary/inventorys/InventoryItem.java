@@ -2,18 +2,27 @@ package de.popokaka.alphalibary.inventorys;
 
 
 import de.popokaka.alphalibary.item.ItemBuilder;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 public class InventoryItem {
 
     private ItemStack is;
-    private int slot;
+    private int slot, damage;
     private String name;
     private String[] lore;
 
     public InventoryItem(ItemStack is, int slot, String name, String... lore) {
         this.is = is;
         this.slot = slot;
+        this.name = name;
+        this.lore = lore;
+    }
+
+    public InventoryItem(Material m, int slot, int dmg, String name, String... lore) {
+        this.is = new ItemStack(m);
+        this.slot = slot;
+        this.damage = dmg;
         this.name = name;
         this.lore = lore;
     }
@@ -40,8 +49,26 @@ public class InventoryItem {
         return this;
     }
 
-    public InventoryItem setIs(ItemStack is) {
+    public InventoryItem setItemstack(ItemStack is) {
         this.is = is;
+        return this;
+    }
+
+    public String[] getLore() {
+        return lore;
+    }
+
+    public InventoryItem setLore(String[] lore) {
+        this.lore = lore;
+        return this;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public InventoryItem setDamage(int damage) {
+        this.damage = damage;
         return this;
     }
 }

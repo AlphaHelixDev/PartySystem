@@ -2,7 +2,9 @@ package de.alphahelix.partysystem.files;
 
 import de.alphahelix.partysystem.PartySystem;
 import de.popokaka.alphalibary.file.SimpleFile;
+import de.popokaka.alphalibary.inventorys.InventoryItem;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 
 public class InventoryFile extends SimpleFile<PartySystem> {
 
@@ -11,12 +13,14 @@ public class InventoryFile extends SimpleFile<PartySystem> {
     }
 
     public void addValues() {
-        setInventoryInformations("Inventories.main", "Alpha Parties", 9);
+        setInventory("Inventories.main", "Alpha Parties", 1,
+                new InventoryItem(Material.NAME_TAG, 4, 0, "&eInvite a player", " ", "&7Invites a player to join", "&7you in a new party."),
+                new InventoryItem(Material.BOOK, 6, 0, "&eView Invites", " ", "&7Manage invites to parties."));
 
-        setItem("Items.join.open GUI item", Material.CHEST, 5, "&aParties", " ");
+        setItem("Items.join.open GUI", Material.CHEST, 5, "&aParties", 0, " ");
+    }
 
-        setItem("Items.select.invite item", Material.NAME_TAG, 4, "&eInvite a player", "&7Invites a player to join", "&7you in a new party.");
-
-        setItem("Items.select.view invites", Material.BOOK, 6, "&eView Invites", "&7Manage invites to parties.");
+    public void createInventory(String which, Inventory i) {
+        setInventory("Inventories." + which, i);
     }
 }

@@ -19,7 +19,7 @@ public class ClickerListener extends SimpleListener<PartySystem, Register> {
         Player p = e.getPlayer();
 
         if (p.getInventory().getItemInMainHand() == null) return;
-        if (p.getInventory().getItemInMainHand().getType() != getRegister().getInventoryFile().getItem("Items.join.open GUI item").getItemStack().getType())
+        if (p.getInventory().getItemInMainHand().getType() != getRegister().getInventoryFile().getItem("Items.join.open GUI").getItemStack().getType())
             return;
         if (e.getAction() == Action.PHYSICAL) return;
 
