@@ -102,7 +102,13 @@ public class ItemBuilder {
 	 *            The new custom lore of the ItemStack
 	 */
 	public ItemBuilder setLore(String... newLore) {
-		this.lore = Arrays.asList(newLore);
+		ArrayList<String> toSet = new ArrayList<>();
+
+		for(String l : newLore) {
+			toSet.add(l.replace("&", "§"));
+		}
+
+		this.lore = toSet;
 		return this;
 	}
 

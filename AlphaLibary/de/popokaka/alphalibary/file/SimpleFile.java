@@ -147,6 +147,11 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         setDefault(path + ".lines", lines);
     }
 
+    public void updateInventoryInformations(String path, String title, int lines) {
+        set(path + ".title", title);
+        set(path + ".lines", lines);
+    }
+
     public void setItem(String path, Material is, int slot, String name, int dmg, String... lore) {
         setDefault(path + ".name", name);
         setDefault(path + ".slot", slot);
@@ -173,6 +178,14 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         String[] lore = a[4].split("~");
 
         return new InventoryItem(new ItemStack(m, 1, dmg), slot, name, lore);
+    }
+
+    public ArrayList<InventoryItem> getItemFromInventory(String path) {
+        ArrayList<InventoryItem> tR = new ArrayList<>();
+
+        tR.addAll(getStringList(path).stream().map(this::deserializeItem).collect(Collectors.toList()));
+
+        return tR;
     }
 
     public InventoryItem getItem(String path) {
@@ -203,12 +216,54 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         setDefault(path + ".content", items);
     }
 
+    public void updateInventory(String path, Inventory i) {
+        updateInventoryInformations(path + ".information", i.getTitle(), i.getSize() / 9);
+        ArrayList<String> items = new ArrayList<>();
+        for (ItemStack is : i.getContents()) {
+            if (is == null) continue;
+            if (!is.hasItemMeta()) {
+                items.add(serializeItem(is.getType(),
+                        i.first(is),
+                        is.getType().name().toLowerCase(),
+                        is.getDurability(),
+                        ""));
+            } else if (!(is.getItemMeta().hasDisplayName() && is.getItemMeta().hasLore())) {
+                items.add(serializeItem(is.getType(),
+                        i.first(is),
+                        is.getType().name().toLowerCase(),
+                        is.getDurability(),
+                        ""));
+            } else if (is.getItemMeta().hasDisplayName() && !is.getItemMeta().hasLore()) {
+                items.add(serializeItem(is.getType(),
+                        i.first(is),
+                        is.getItemMeta().getDisplayName(),
+                        is.getDurability(),
+                        ""));
+            } else if (!is.getItemMeta().hasDisplayName() && is.getItemMeta().hasLore()) {
+                items.add(serializeItem(is.getType(),
+                        i.first(is),
+                        is.getType().name().toLowerCase(),
+                        is.getDurability(),
+                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()])));
+            } else {
+                items.add(serializeItem(is.getType(),
+                        i.first(is),
+                        is.getItemMeta().getDisplayName(),
+                        is.getDurability(),
+                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()])));
+            }
+            i.clear(i.first(is));
+        }
+        set(path + ".content", items);
+        save();
+    }
+
     public void setInventory(String path, String title, int lines, InventoryItem... ii) {
-        setInventoryInformations(path + ".information", title, lines / 9);
+        setInventoryInformations(path + ".information", title, lines);
         ArrayList<String> items = new ArrayList<>();
         for (InventoryItem is : ii) {
             if (is == null) continue;
-            items.add(serializeItem(is.getItemStack().getType(), is.getSlot(), is.getName(), is.getItemStack().getDurability(), is.getItemStack().getItemMeta().getLore().toArray(new String[is.getItemStack().getItemMeta().getLore().size()])));
+            items.add(serializeItem(is.getItemStack().getType(), is.getSlot(), is.getName(), is.getItemStack().getDurability(), is.getLore()));
         }
         setDefault(path + ".content", items);
     }
@@ -220,7 +275,8 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
 
         Inventory inv = Bukkit.createInventory(null, size, title);
 
-        for(InventoryItem ii : stacks) {
+        for (InventoryItem ii : stacks) {
+            if (ii.getSlot() > inv.getSize()) return inv;
             inv.setItem(ii.getSlot(), ii.getItemStack());
         }
 

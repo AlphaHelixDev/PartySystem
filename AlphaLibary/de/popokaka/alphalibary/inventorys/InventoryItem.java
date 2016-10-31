@@ -28,7 +28,7 @@ public class InventoryItem {
     }
 
     public ItemStack getItemStack() {
-        return new ItemBuilder(this.is.getType()).setAmount(this.is.getAmount()).setLore(this.lore).setDamage(this.is.getDurability()).setName(this.name).build();
+        return new ItemBuilder(this.is.getType()).setAmount(this.is.getAmount()).setLore(this.lore).setDamage(this.is.getDurability()).setName(this.name.replace("&", "§")).build();
     }
 
     public int getSlot() {
@@ -41,7 +41,7 @@ public class InventoryItem {
     }
 
     public String getName() {
-        return name;
+        return name.replace("&" , "§");
     }
 
     public InventoryItem setName(String name) {

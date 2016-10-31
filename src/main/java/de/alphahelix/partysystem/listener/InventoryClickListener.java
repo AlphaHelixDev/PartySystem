@@ -28,14 +28,14 @@ public class InventoryClickListener extends SimpleListener<PartySystem, Register
 
         String displayName = e.getCurrentItem().getItemMeta().getDisplayName();
 
-        if (isEqual(displayName, getRegister().getInventoryFile().getItem("Items.main.invite").getName())) {
+        if (isEqual(displayName, getRegister().getInventoryFile().getItemFromInventory("Inventories.main.content").get(0).getName())) {
             names.add(p.getName());
 
             p.closeInventory();
 
             p.sendMessage(createMessageBox(getRegister().getMessageFile().getColorString("Player.invite Field")));
 
-        } else if (isEqual(displayName, getRegister().getInventoryFile().getItem("Items.main.view invites").getName())) {
+        } else if (isEqual(displayName, getRegister().getInventoryFile().getItemFromInventory("Inventories.main.content").get(1).getName())) {
             //TODO: open invites inv
         }
     }

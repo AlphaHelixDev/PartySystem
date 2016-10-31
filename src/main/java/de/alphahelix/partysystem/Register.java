@@ -1,14 +1,10 @@
 package de.alphahelix.partysystem;
 
 
+import de.alphahelix.partysystem.commands.InventoryCreateCommand;
 import de.alphahelix.partysystem.files.InventoryFile;
 import de.alphahelix.partysystem.files.MessageFile;
-import de.alphahelix.partysystem.inventories.InvitesInventory;
-import de.alphahelix.partysystem.inventories.SelectInventory;
-import de.alphahelix.partysystem.listener.ChatListener;
-import de.alphahelix.partysystem.listener.ClickerListener;
-import de.alphahelix.partysystem.listener.InventoryClickListener;
-import de.alphahelix.partysystem.listener.JoinListener;
+import de.alphahelix.partysystem.listener.*;
 
 public class Register {
 
@@ -17,13 +13,11 @@ public class Register {
     private InventoryFile inventoryFile;
     private MessageFile messageFile;
 
-    private SelectInventory selectInventory;
-    private InvitesInventory invitesInventory;
-
     private JoinListener joinListener;
     private ClickerListener clickerListener;
     private InventoryClickListener inventoryClickListener;
     private ChatListener chatListener;
+    private InventoryCreateListener inventoryCreateListener;
 
     public Register(PartySystem pl) {
         setPartySystem(pl);
@@ -33,19 +27,15 @@ public class Register {
         setInventoryFile(new InventoryFile(partySystem));
         setMessageFile(new MessageFile(partySystem));
 
-        setSelectInventory(new SelectInventory(partySystem, this));
-        setInvitesInventory(new InvitesInventory(partySystem, this));
-
         registerFiles();
         registerCommands();
         registerEvents();
-        fillInventorys();
 
         getPartySystem().setPrefix(getMessageFile().getColorString("Plugin.prefix"));
     }
 
     public void registerCommands() {
-
+        new InventoryCreateCommand(partySystem, this);
     }
 
     public void registerEvents() {
@@ -53,25 +43,12 @@ public class Register {
         setClickerListener(new ClickerListener(partySystem, this));
         setInventoryClickListener(new InventoryClickListener(partySystem, this));
         setChatListener(new ChatListener(partySystem, this));
+        setInventoryCreateListener(new InventoryCreateListener(partySystem, this));
     }
 
     public void registerFiles() {
         getInventoryFile().addValues();
         getMessageFile().addValues();
-    }
-
-    public void fillInventorys() {
-        getSelectInventory().fillInventory();
-        getInvitesInventory().fillInventory();
-    }
-
-    public SelectInventory getSelectInventory() {
-        return selectInventory;
-    }
-
-    public Register setSelectInventory(SelectInventory selectInventory) {
-        this.selectInventory = selectInventory;
-        return this;
     }
 
     public InventoryFile getInventoryFile() {
@@ -137,12 +114,12 @@ public class Register {
         return this;
     }
 
-    public InvitesInventory getInvitesInventory() {
-        return invitesInventory;
+    public InventoryCreateListener getInventoryCreateListener() {
+        return inventoryCreateListener;
     }
 
-    public Register setInvitesInventory(InvitesInventory invitesInventory) {
-        this.invitesInventory = invitesInventory;
+    public Register setInventoryCreateListener(InventoryCreateListener inventoryCreateListener) {
+        this.inventoryCreateListener = inventoryCreateListener;
         return this;
     }
 }
