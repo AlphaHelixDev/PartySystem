@@ -1,5 +1,8 @@
 package de.popokaka.alphalibary.file;
 
+import de.alphahelix.partysystem.ItemFunction;
+import de.alphahelix.partysystem.ItemFunctionEnum;
+import de.alphahelix.partysystem.Prompts;
 import de.popokaka.alphalibary.AlphaPlugin;
 import de.popokaka.alphalibary.inventorys.InventoryItem;
 import de.popokaka.alphalibary.item.ItemBuilder;
@@ -7,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -152,35 +156,28 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         set(path + ".lines", lines);
     }
 
-    public void setItem(String path, Material is, int slot, String name, int dmg, String... lore) {
-        setDefault(path + ".name", name);
-        setDefault(path + ".slot", slot);
-        setDefault(path + ".material", is.name().toLowerCase().replace("_", " "));
-        setDefault(path + ".damage", dmg);
-        setDefault(path + ".lore", Arrays.asList(lore));
-    }
-
-    public String serializeItem(Material is, int slot, String name, int dmg, String... lore) {
+    public String serializeItem(Material is, int slot, String name, int dmg, ItemFunction function, String... lore) {
         String addLore = "";
         for (String l : lore) {
             addLore += "~" + l;
         }
-        return transformMaterial(is) + ":" + slot + ":" + name + ":" + dmg + ":" + addLore;
+        return transformMaterial(is) + ":" + slot + ":" + name + ":" + dmg + ":" + transformFunction(function) + ":" + addLore;
     }
 
     public InventoryItem deserializeItem(String str) {
         String[] a = str.split(":");
 
-        Material m = transformString(a[0]);
+        Material m = transformMaterialString(a[0]);
         int slot = Integer.parseInt(a[1]);
         String name = a[2];
         short dmg = Short.parseShort(a[3]);
-        String[] lore = a[4].split("~");
+        ItemFunction function = transformFunctionString(a[4]);
+        String[] lore = a[5].split("~");
 
-        return new InventoryItem(new ItemStack(m, 1, dmg), slot, name, lore);
+        return new InventoryItem(new ItemStack(m, 1, dmg), slot, name, function, lore);
     }
 
-    public ArrayList<InventoryItem> getItemFromInventory(String path) {
+    public ArrayList<InventoryItem> getItemsFromInventory(String path) {
         ArrayList<InventoryItem> tR = new ArrayList<>();
 
         tR.addAll(getStringList(path).stream().map(this::deserializeItem).collect(Collectors.toList()));
@@ -188,13 +185,23 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         return tR;
     }
 
+    public void setItem(String path, Material is, int slot, String name, int dmg, ItemFunction function, String... lore) {
+        setDefault(path + ".name", name);
+        setDefault(path + ".slot", slot);
+        setDefault(path + ".material", transformMaterial(is));
+        setDefault(path + ".function", transformFunction(function));
+        setDefault(path + ".damage", dmg);
+        setDefault(path + ".lore", Arrays.asList(lore));
+    }
+
     public InventoryItem getItem(String path) {
         String name = getColorString(path + ".name");
         List<String> loreList = getColoredStringList(path + ".lore");
         int slot = getSlot(path + ".slot");
         short dmg = (short) getInt(path + ".damage");
-        Material m = getMaterial(path + ".material");
-        return new InventoryItem(new ItemStack(m, 1, dmg), slot, name, loreList.toArray(new String[loreList.size()]));
+        Material m = transformMaterialString(getString(path + ".material"));
+        ItemFunction function = transformFunctionString(getString(path + ".function"));
+        return new InventoryItem(new ItemStack(m, 1, dmg), slot, name, function, loreList.toArray(new String[loreList.size()]));
     }
 
     public ArrayList<String> getColoredStringList(String path) {
@@ -202,76 +209,79 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
     }
 
     private int getSlot(String path) {
-        return getInt(path) - 1;
+        return getInt(path);
     }
 
     public void setInventory(String path, Inventory i) {
-        setInventoryInformations(path + ".information", i.getTitle(), i.getSize() / 9);
-        ArrayList<String> items = new ArrayList<>();
-        for (ItemStack is : i.getContents()) {
-            if (is == null) continue;
-            items.add(serializeItem(is.getType(), i.first(is), is.getItemMeta().getDisplayName(), is.getDurability(), is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()])));
-            i.remove(is);
-        }
-        setDefault(path + ".content", items);
-    }
-
-    public void updateInventory(String path, Inventory i) {
         updateInventoryInformations(path + ".information", i.getTitle(), i.getSize() / 9);
-        ArrayList<String> items = new ArrayList<>();
+        ConfigurationSection cfgs = getConfigurationSection(path + ".content");
         for (ItemStack is : i.getContents()) {
             if (is == null) continue;
             if (!is.hasItemMeta()) {
-                items.add(serializeItem(is.getType(),
+                setItem(path + ".content." + Integer.toString(cfgs.getKeys(false).size()),
+                        is.getType(),
                         i.first(is),
                         is.getType().name().toLowerCase(),
                         is.getDurability(),
-                        ""));
+                        new ItemFunction(ItemFunctionEnum.NONE),
+                        "");
             } else if (!(is.getItemMeta().hasDisplayName() && is.getItemMeta().hasLore())) {
-                items.add(serializeItem(is.getType(),
+                setItem(path + ".content." + Integer.toString(cfgs.getKeys(false).size()),
+                        is.getType(),
                         i.first(is),
                         is.getType().name().toLowerCase(),
                         is.getDurability(),
-                        ""));
+                        new ItemFunction(ItemFunctionEnum.NONE),
+                        "");
             } else if (is.getItemMeta().hasDisplayName() && !is.getItemMeta().hasLore()) {
-                items.add(serializeItem(is.getType(),
+                setItem(path + ".content." + Integer.toString(cfgs.getKeys(false).size()),
+                        is.getType(),
                         i.first(is),
                         is.getItemMeta().getDisplayName(),
                         is.getDurability(),
-                        ""));
+                        new ItemFunction(ItemFunctionEnum.NONE),
+                        "");
             } else if (!is.getItemMeta().hasDisplayName() && is.getItemMeta().hasLore()) {
-                items.add(serializeItem(is.getType(),
+                setItem(path + ".content." + Integer.toString(cfgs.getKeys(false).size()),
+                        is.getType(),
                         i.first(is),
                         is.getType().name().toLowerCase(),
                         is.getDurability(),
-                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()])));
+                        new ItemFunction(ItemFunctionEnum.NONE),
+                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()]));
             } else {
-                items.add(serializeItem(is.getType(),
+                setItem(path + ".content." + Integer.toString(cfgs.getKeys(false).size()),
+                        is.getType(),
                         i.first(is),
                         is.getItemMeta().getDisplayName(),
                         is.getDurability(),
-                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()])));
+                        new ItemFunction(ItemFunctionEnum.NONE),
+                        is.getItemMeta().getLore().toArray(new String[is.getItemMeta().getLore().size()]));
             }
             i.clear(i.first(is));
         }
-        set(path + ".content", items);
         save();
     }
 
     public void setInventory(String path, String title, int lines, InventoryItem... ii) {
         setInventoryInformations(path + ".information", title, lines);
-        ArrayList<String> items = new ArrayList<>();
         for (InventoryItem is : ii) {
             if (is == null) continue;
-            items.add(serializeItem(is.getItemStack().getType(), is.getSlot(), is.getName(), is.getItemStack().getDurability(), is.getLore()));
+            if (getConfigurationSection(path + ".content") == null) {
+                setItem(path + ".content." + Integer.toString(0),
+                        is.getItemStack().getType(), is.getSlot(), is.getName(), is.getItemStack().getDurability(),
+                        is.getFunction(), is.getLore());
+            } else
+                setItem(path + ".content." + Integer.toString(getConfigurationSection(path + ".content").getKeys(false).size()),
+                        is.getItemStack().getType(), is.getSlot(), is.getName(), is.getItemStack().getDurability(),
+                        is.getFunction(), is.getLore());
         }
-        setDefault(path + ".content", items);
     }
 
     public Inventory getInventory(String path) {
-        String title = getColorString(path + ".information.title");
+        String title = getColorString(path + ".information.title").replace("_", " ");
         int size = getInt(path + ".information.lines") * 9;
-        ArrayList<InventoryItem> stacks = getStringList(path + ".content").stream().map(this::deserializeItem).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<InventoryItem> stacks = getConfigurationSection(path + ".content").getKeys(false).stream().map(index -> getItem(path + ".content." + index)).collect(Collectors.toCollection(ArrayList::new));
 
         Inventory inv = Bukkit.createInventory(null, size, title);
 
@@ -281,6 +291,13 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         }
 
         return inv;
+    }
+
+    public InventoryItem scanInventoryForItemname(String path, String name) {
+        for (String index : getConfigurationSection(path + ".content").getKeys(false))
+            if (getItem(path + ".content." + index).getName().equals(name))
+                return getItem(path + ".content." + index);
+        return null;
     }
 
     /**
@@ -452,12 +469,31 @@ public class SimpleFile<P extends AlphaPlugin> extends YamlConfiguration {
         return m.name().replace("_", " ").toLowerCase();
     }
 
-    public Material transformString(String str) {
+    public Material transformMaterialString(String str) {
         return Material.getMaterial(str.replace(" ", "_").toUpperCase());
     }
 
-    public Material getMaterial(String path) {
-        return Material.getMaterial(getString(path).replace(" ", "_").toUpperCase());
+    /**
+     * Serilize an {@code ItemFunction} to:
+     * <p>
+     * itemFunctionEnum-promt-inventoryInsideFile-isPromptItem
+     *
+     * @param i the ItemFunction to serialize
+     * @return the serialized ItemFunction
+     */
+    public String transformFunction(ItemFunction i) {
+        return i.getItemFunctionEnum() + "-" + i.getPrompt() + "-" + i.getInventory() + "-" + i.isPromptingItem();
+    }
+
+    public ItemFunction transformFunctionString(String str) {
+        String[] vars = str.split("-");
+
+        ItemFunctionEnum itemFunctionEnum = ItemFunctionEnum.valueOf(vars[0]);
+        Prompts prompts = Prompts.valueOf(vars[1]);
+        String inventory = vars[2];
+        boolean isPromtItem = Boolean.getBoolean(vars[3]);
+
+        return new ItemFunction(itemFunctionEnum).setPrompt(prompts).setInventory(inventory).setPromptingItem(isPromtItem);
     }
 
     public boolean configContains(String arg) {

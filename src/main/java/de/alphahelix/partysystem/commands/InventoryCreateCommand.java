@@ -30,7 +30,7 @@ public class InventoryCreateCommand extends SimpleCommand<PartySystem, Register>
                     p.openInventory(Bukkit.createInventory(p, Integer.parseInt(args[2]), args[1]));
                 } else {
                     p.sendMessage(getPlugin().getPrefix() + "§7You can't create this inventory!" +
-                            "\n Only ["+LegalInventories.values()+"] are allowed");
+                            "\n Only ["+LegalInventories.getStringName()+"] are allowed");
                 }
             } else {
                 p.sendMessage(getPlugin().getPrefix() + getRegister().getMessageFile().getColorString("Player.not enough permissions"));

@@ -15,4 +15,8 @@ public enum LegalInventories {
 
         return tR;
     }
+
+    public static String getStringName() {
+        return "main, invites";
+    }
 }

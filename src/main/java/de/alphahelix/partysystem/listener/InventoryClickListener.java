@@ -2,10 +2,15 @@ package de.alphahelix.partysystem.listener;
 
 import de.alphahelix.partysystem.PartySystem;
 import de.alphahelix.partysystem.Register;
+import de.popokaka.alphalibary.item.ItemBuilder;
 import de.popokaka.alphalibary.listener.SimpleListener;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
 
@@ -28,16 +33,17 @@ public class InventoryClickListener extends SimpleListener<PartySystem, Register
 
         String displayName = e.getCurrentItem().getItemMeta().getDisplayName();
 
-        if (isEqual(displayName, getRegister().getInventoryFile().getItemFromInventory("Inventories.main.content").get(0).getName())) {
-            names.add(p.getName());
+        getRegister().getInventoryFile().scanInventoryForItemname("Inventories.main", displayName).getFunction().perfomFunction(p);
 
-            p.closeInventory();
-
-            p.sendMessage(createMessageBox(getRegister().getMessageFile().getColorString("Player.invite Field")));
-
-        } else if (isEqual(displayName, getRegister().getInventoryFile().getItemFromInventory("Inventories.main.content").get(1).getName())) {
-            //TODO: open invites inv
-        }
+//        if (isEqual(displayName, getRegister().getInventoryFile().getItem("Inventories.main.content").getName())) {
+//            names.add(p.getName());
+//
+//            p.closeInventory();
+//
+//            p.sendMessage(createMessageBox(getRegister().getMessageFile().getColorString("Player.invite Field")));
+//        } else if (isEqual(displayName, getRegister().getInventoryFile().getItemsFromInventory("Inventories.main.content").get(1).getName())) {
+//            //TODO: open invites inv
+//        }
     }
 
     public boolean isAboutToCreateParty(Player p) {

@@ -24,6 +24,6 @@ public class ClickerListener extends SimpleListener<PartySystem, Register> {
         if (e.getAction() == Action.PHYSICAL) return;
 
         e.setCancelled(true);
-        p.openInventory(getRegister().getInventoryFile().getInventory("Inventories.main"));
+        getRegister().getInventoryFile().getItem("Items.join.open GUI").getFunction().perfomFunction(p);
     }
 }

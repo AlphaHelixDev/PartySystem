@@ -13,7 +13,9 @@ public class MessageFile extends SimpleFile<PartySystem> {
     public void addValues() {
         setDefault("Plugin.prefix", "&7[&eAlphaParties&7] ");
         setDefault("Player.not online", "&7The player &c[player] &7isn't online!");
-        setDefault("Player.invite Field", "&7Please enter a playername");
+        setDefault("Player.invite Field", "&7Please enter a player.");
         setDefault("Player.not enough permissions", "&7You aren't allowed to perform this command!");
+        setDefault("Party.invited", "&7You have been invited to the party of [player].");
+        setDefault("Party.request send", "&7You've invited [player] to your party.");
     }
 }

@@ -14,6 +14,6 @@ public class JoinListener extends SimpleListener<PartySystem, Register> {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        e.getPlayer().getInventory().setItem(getRegister().getInventoryFile().getItem("Items.join.open GUI item").getSlot(), getRegister().getInventoryFile().getItem("Items.join.open GUI item").getItemStack());
+        e.getPlayer().getInventory().setItem(getRegister().getInventoryFile().getItem("Items.join.open GUI").getSlot(), getRegister().getInventoryFile().getItem("Items.join.open GUI").getItemStack());
     }
 }

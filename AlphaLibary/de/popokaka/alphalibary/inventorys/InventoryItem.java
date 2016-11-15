@@ -1,6 +1,8 @@
 package de.popokaka.alphalibary.inventorys;
 
 
+import de.alphahelix.partysystem.ItemFunction;
+import de.alphahelix.partysystem.ItemFunctionEnum;
 import de.popokaka.alphalibary.item.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -11,20 +13,23 @@ public class InventoryItem {
     private int slot, damage;
     private String name;
     private String[] lore;
+    private ItemFunction function;
 
-    public InventoryItem(ItemStack is, int slot, String name, String... lore) {
+    public InventoryItem(ItemStack is, int slot, String name, ItemFunction function, String... lore) {
         this.is = is;
         this.slot = slot;
         this.name = name;
         this.lore = lore;
+        this.function = function;
     }
 
-    public InventoryItem(Material m, int slot, int dmg, String name, String... lore) {
+    public InventoryItem(Material m, int slot, int dmg, String name, ItemFunction function, String... lore) {
         this.is = new ItemStack(m);
         this.slot = slot;
         this.damage = dmg;
         this.name = name;
         this.lore = lore;
+        this.function = function;
     }
 
     public ItemStack getItemStack() {
@@ -69,6 +74,15 @@ public class InventoryItem {
 
     public InventoryItem setDamage(int damage) {
         this.damage = damage;
+        return this;
+    }
+
+    public ItemFunction getFunction() {
+        return function;
+    }
+
+    public InventoryItem setFunction(ItemFunction function) {
+        this.function = function;
         return this;
     }
 }
